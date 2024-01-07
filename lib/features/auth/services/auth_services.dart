@@ -1,16 +1,16 @@
 import 'dart:convert';
-
-import 'package:amazon_clone/constants/error_handling.dart';
-import 'package:amazon_clone/constants/global_variables.dart';
-import 'package:amazon_clone/constants/util.dart';
+import 'package:amazon_clone/common/widgets/bottom_bar.dart';
 import 'package:amazon_clone/features/home/screens/home_screen.dart';
-import 'package:amazon_clone/models/user.dart';
-import 'package:amazon_clone/providers/user_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../constants/error_handling.dart';
+import '../../../constants/global_variables.dart';
+import '../../../constants/util.dart';
+import '../../../models/user.dart';
+import '../../../providers/user_provider.dart';
 
 class AuthService {
   // sign up user
@@ -62,7 +62,7 @@ class AuthService {
   }) async {
     try {
       http.Response res = await http.post(
-        Uri.parse('$uri/api/signIn'),
+        Uri.parse('$uri/api/signin'),
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -71,17 +71,16 @@ class AuthService {
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
-
       httpErrorHandle(
         response: res,
         context: context,
         onSuccess: () async {
-          SharedPreferences pref = await SharedPreferences.getInstance();
+          SharedPreferences prefs = await SharedPreferences.getInstance();
           Provider.of<UserProvider>(context, listen: false).setUser(res.body);
-          await pref.setString('X-auth-token', jsonDecode(res.body)['token']);
+          await prefs.setString('x-auth-token', jsonDecode(res.body)['token']);
           Navigator.pushNamedAndRemoveUntil(
             context,
-            HomeScreen.routeName,
+            BottomBar.routeName,
             (route) => false,
           );
         },
@@ -91,52 +90,40 @@ class AuthService {
     }
   }
 
-  //get user data
+  // get user data
   void getUserData(
     BuildContext context,
   ) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('X-auth-token');
+      String? token = prefs.getString('x-auth-token');
 
       if (token == null) {
-        prefs.setString('X-auth-token', '');
+        prefs.setString('x-auth-token', '');
       }
 
-      await http.post(
-        Uri.parse('$uri/tokenIsVAlid'),
-        headers: <String,String>{
+      var tokenRes = await http.post(
+        Uri.parse('$uri/tokenIsValid'),
+        headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          'X-AUTH-TOKEN' : token!
-        }
+          'x-auth-token': token!
+        },
       );
 
       var response = jsonDecode(tokenRes.body);
-      // http.Response res = await http.post(
-      //   Uri.parse('$uri/api/signIn'),
-      //   body: jsonEncode({
-      //     'email': email,
-      //     'password': password,
-      //   }),
-      //   headers: <String, String>{
-      //     'Content-Type': 'application/json; charset=UTF-8',
-      //   },
-      // );
 
-      // httpErrorHandle(
-      //   response: res,
-      //   context: context,
-      //   onSuccess: () async {
-      //     SharedPreferences pref = await SharedPreferences.getInstance();
-      //     Provider.of<UserProvider>(context, listen: false).setUser(res.body);
-      //     await pref.setString('X-auth-token', jsonDecode(res.body)['token']);
-      //     Navigator.pushNamedAndRemoveUntil(
-      //       context,
-      //       HomeScreen.routeName,
-      //       (route) => false,
-      //     );
-      //   },
-      // );
+      if (response == true) {
+        http.Response userRes = await http.get(
+          Uri.parse('$uri/'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+            'x-auth-token': token
+          },
+        );
+
+        var userProvider = Provider.of<UserProvider>(context, listen: false);
+        userProvider.setUser(userRes.body);
+      }
     } catch (e) {
       showSnackBar(context, e.toString());
     }

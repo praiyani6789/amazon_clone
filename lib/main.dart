@@ -1,12 +1,20 @@
+import 'package:amazon_clone/common/widgets/bottom_bar.dart';
 import 'package:amazon_clone/constants/global_variables.dart';
 import 'package:amazon_clone/features/auth/screens/auth_screen.dart';
 import 'package:amazon_clone/features/auth/services/auth_services.dart';
 import 'package:amazon_clone/providers/user_provider.dart';
 import 'package:amazon_clone/router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent, // transparent status bar
+    ),
+  );
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
       create: (context) => UserProvider(),
@@ -22,12 +30,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final AuthService authService =AuthService();
+  final AuthService authService = AuthService();
 
   @override
   void initState() {
     super.initState();
+    authService.getUserData(context);
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -44,6 +54,8 @@ class _MyAppState extends State<MyApp> {
               )),
         ),
         onGenerateRoute: ((settings) => generateRoute(settings)),
-        home: AuthScreen());
+        home: Provider.of<UserProvider>(context).user.token.isNotEmpty
+            ? const BottomBar()
+            : const AuthScreen());
   }
 }
