@@ -1,4 +1,5 @@
 import 'package:amazon_clone/common/widgets/bottom_bar.dart';
+import 'package:amazon_clone/features/admin/screens/add_product_screen.dart';
 import 'package:amazon_clone/features/home/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:amazon_clone/features/auth/screens/auth_screen.dart';
@@ -24,6 +25,12 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
         settings: routeSettings,
         builder: (_) =>
             const BottomBar(), // Add this line to return your AuthScreen widget
+      );
+    case AddProductScreen.routeName:
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) =>
+            const AddProductScreen(), // Add this line to return your AuthScreen widget
       );
 
     default:

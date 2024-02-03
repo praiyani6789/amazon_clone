@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:amazon_clone/common/widgets/bottom_bar.dart';
-import 'package:amazon_clone/features/home/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
